@@ -11,13 +11,11 @@ async function RestCountriesByFetch() {
     let response = await fetch('https://restcountries.com/v3.1/all');
     try {
         let data = await response.text();
-        let demoData = JSON.parse(data);
+        let obj = JSON.parse(data);
         var txt = '';
         txt += '<option value="">-------Select-------</option>';
-        let obj = Array.from(demoData);
-        console.log(obj);
         for (i = 0; i < obj.length; i++) {
-            txt += '<option value=' + obj[i].alpha2Code + '>' + obj[i].name + '</option>';
+            txt += '<option value=' + obj[i].cca2 + '>' + obj[i].name.common + '</option>';
         }
         document.getElementById('countryName').innerHTML = txt;
     }
@@ -32,12 +30,15 @@ async function RestSingleCountriesByFetch() {
         alert('Please select a country');
     }
     else {
-        let response = await fetch('https://restcountries.com/v2/alpha/' + requestData);
+        let response = await fetch('https://restcountries.com/v3.1/alpha/' + requestData);
 
         try {
             let responseData = await response.text();
             let obj = JSON.parse(responseData);
-            if (Object.hasOwn(obj, 'name') == true) { document.getElementById('name').value = obj.name; } else { document.getElementById('name').value = ''; }
+            if (Object.hasOwn(obj[0].name, 'common') == true) { document.getElementById('name').value = obj[0].name.common; } else { document.getElementById('name').value = ''; }
+            if (Object.hasOwn(obj[0].name, 'official') == true) { document.getElementById('official').value = obj[0].name.official; } else { document.getElementById('official').value = ''; }
+            if (Object.hasOwn(obj[0].name, 'nativeName') == true) { document.getElementById('nativeName').value = obj[0].name.nativeName; } else { document.getElementById('nativeName').value = ''; }
+            
             if (Object.hasOwn(obj, 'topLevelDomain') == true) { document.getElementById('topLevelDomain').value = obj.topLevelDomain; } else { document.getElementById('topLevelDomain').value = ''; }
             if (Object.hasOwn(obj, 'alpha2Code') == true) { document.getElementById('alpha2Code').value = obj.alpha2Code; } else { document.getElementById('alpha2Code').value = ''; }
             if (Object.hasOwn(obj, 'alpha3Code') == true) { document.getElementById('alpha3Code').value = obj.alpha3Code; } else { document.getElementById('alpha3Code').value = ''; }
