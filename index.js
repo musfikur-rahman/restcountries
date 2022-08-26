@@ -11,16 +11,14 @@ async function RestCountriesByFetch() {
     let response = await fetch('https://restcountries.com/v3.1/all');
     try {
         let data = await response.text();
-        let obj = JSON.parse(data);
+        let obj = JSON.parse(data);        
         var txt = '';
         txt += '<option value="">-------Select-------</option>';
-        for (i = 0; i < obj.length; i++) {
-            txt += '<option value=' + obj[i].cca2 + '>' + obj[i].name.common + '</option>';
-        }
+        obj.forEach(element => (txt += '<option value=' + element.cca2 + '>' + element.name.common + '</option>'));
         document.getElementById('countryName').innerHTML = txt;
     }
     catch (error) {
-        alert(error.message);
+        console.log(error.message);
     }
 }
 
@@ -34,67 +32,82 @@ async function RestSingleCountriesByFetch() {
 
         try {
             let responseData = await response.text();
-            let obj = JSON.parse(responseData);
-            if (Object.hasOwn(obj[0].name, 'common') == true) { document.getElementById('name').value = obj[0].name.common; } else { document.getElementById('name').value = ''; }
-            if (Object.hasOwn(obj[0].name, 'official') == true) { document.getElementById('official').value = obj[0].name.official; } else { document.getElementById('official').value = ''; }
-            if (Object.hasOwn(obj[0].name, 'nativeName') == true) { document.getElementById('nativeName').value = obj[0].name.nativeName; } else { document.getElementById('nativeName').value = ''; }
-            
-            if (Object.hasOwn(obj, 'topLevelDomain') == true) { document.getElementById('topLevelDomain').value = obj.topLevelDomain; } else { document.getElementById('topLevelDomain').value = ''; }
-            if (Object.hasOwn(obj, 'alpha2Code') == true) { document.getElementById('alpha2Code').value = obj.alpha2Code; } else { document.getElementById('alpha2Code').value = ''; }
-            if (Object.hasOwn(obj, 'alpha3Code') == true) { document.getElementById('alpha3Code').value = obj.alpha3Code; } else { document.getElementById('alpha3Code').value = ''; }
-            if (Object.hasOwn(obj, 'callingCodes') == true) { document.getElementById('callingCodes').value = obj.callingCodes; } else { document.getElementById('callingCodes').value = ''; }
-            if (Object.hasOwn(obj, 'capital') == true) { document.getElementById('capital').value = obj.capital; } else { document.getElementById('capital').value = ''; }
-            if (Object.hasOwn(obj, 'altSpellings') == true) { document.getElementById('altSpellings').value = obj.altSpellings; } else { document.getElementById('altSpellings').value = ''; }
-            if (Object.hasOwn(obj, 'region') == true) { document.getElementById('region').value = obj.region; } else { document.getElementById('region').value = ''; }
-            if (Object.hasOwn(obj, 'subregion') == true) { document.getElementById('subregion').value = obj.subregion; } else { document.getElementById('subregion').value = ''; }
-            if (Object.hasOwn(obj, 'population') == true) { document.getElementById('population').value = obj.population; } else { document.getElementById('population').value = ''; }
-            if (Object.hasOwn(obj, 'latlng') == true) { document.getElementById('latlng').value = obj.latlng; } else { document.getElementById('latlng').value = ''; }
-            if (Object.hasOwn(obj, 'demonym') == true) { document.getElementById('demonym').value = obj.demonym; } else { document.getElementById('demonym').value = ''; }
-            if (Object.hasOwn(obj, 'area') == true) { document.getElementById('area').value = obj.area; } else { document.getElementById('area').value = ''; }
-            if (Object.hasOwn(obj, 'gini') == true) { document.getElementById('gini').value = obj.gini; } else { document.getElementById('gini').value = ''; }
-            if (Object.hasOwn(obj, 'timezones') == true) { document.getElementById('timezones').value = obj.timezones; } else { document.getElementById('timezones').value = ''; }
-            if (Object.hasOwn(obj, 'borders') == true) { document.getElementById('borders').value = obj.borders; } else { document.getElementById('borders').value = ''; }
-            if (Object.hasOwn(obj, 'nativeName') == true) { document.getElementById('nativeName').value = obj.nativeName; } else { document.getElementById('nativeName').value = ''; }
-            if (Object.hasOwn(obj, 'numericCode') == true) { document.getElementById('numericCode').value = obj.numericCode; } else { document.getElementById('numericCode').value = ''; }
-            if (Object.hasOwn(obj, 'currencies') == true) { if (obj.currencies.length > 0) { document.getElementById('currencies').value += obj.currencies[0].code + ',' + obj.currencies[0].name + ',' + obj.currencies[0].symbol; } else { document.getElementById('currencies').value = ''; } } else { document.getElementById('currencies').value = ''; }
-            if (Object.hasOwn(obj, 'languages') == true) { if (obj.languages.length > 0) { document.getElementById('languages').value += obj.languages[0].iso639_1 + ',' + obj.languages[0].iso639_2 + ',' + obj.languages[0].name + ',' + obj.languages[0].nativeName; } else { document.getElementById('languages').value = ''; } } else { document.getElementById('languages').value = ''; }
-            if (Object.hasOwn(obj, 'translations') == true) { if (obj.translations.length > 0) { document.getElementById('translations').value += obj.translations.de + ',' + obj.translations.es + ',' + obj.translations.fr + ',' + obj.translations.ja + ',' + obj.translations.it + ',' + obj.translations.br + ',' + obj.translations.pt + ',' + obj.translations.nl + ',' + obj.translations.hr + ',' + obj.translations.fa; } else { document.getElementById('translations').value = ''; } } else { document.getElementById('translations').value = ''; }
-            if (Object.hasOwn(obj, 'regionalBlocs') == true) { if(obj.regionalBlocs.length > 0){ document.getElementById('regionalBlocs').value = obj.regionalBlocs[0].acronym + ',' + obj.regionalBlocs[0].name; } else { document.getElementById('regionalBlocs').value = ''; } } else { document.getElementById('regionalBlocs').value = ''; }
+            let obj = JSON.parse(responseData)[0];
+            if (Object.hasOwn(obj.name, 'common') == true) { document.getElementById('common').value = obj.name.common; } else { document.getElementById('common').value = ''; }
+            if (Object.hasOwn(obj.name, 'official') == true) { document.getElementById('official').value = obj.name.official; } else { document.getElementById('official').value = ''; }
+            if (Object.hasOwn(obj.name, 'nativeName') == true) { 
+                let nativeName = '';
+                for (let x in obj.name.nativeName) {
+                    nativeName += x + '- ';
+                    for (let y in obj.name.nativeName[x]) {
+                        nativeName += y + ': ' + obj.name.nativeName[x][y] + ', '
+                    }
+                }
+                document.getElementById('nativeName').value = nativeName; 
+            } else { document.getElementById('nativeName').value = ''; }
+            if (Object.hasOwn(obj, 'tld') == true) { document.getElementById('tld').value = obj.tld; } else { document.getElementById('tld').value = ''; }
+            if (Object.hasOwn(obj, 'cca2') == true) { document.getElementById('cca2').value = obj.cca2; } else { document.getElementById('cca2').value = ''; }
+            if (Object.hasOwn(obj, 'ccn3') == true) { document.getElementById('ccn3').value = obj.ccn3; } else { document.getElementById('ccn3').value = ''; }
+            if (Object.hasOwn(obj, 'cca3') == true) { document.getElementById('cca3').value = obj.cca3; } else { document.getElementById('cca3').value = ''; }
             if (Object.hasOwn(obj, 'cioc') == true) { document.getElementById('cioc').value = obj.cioc; } else { document.getElementById('cioc').value = ''; }
-            if (Object.hasOwn(obj, 'flag') == true) { document.getElementById('flag').src = obj.flag; }
-            if (Object.hasOwn(obj, 'flags') == true) { document.getElementById('flag').src = obj.flags.svg; } 
-            document.getElementById('flag').className = 'w3-image w3-border w3-border-black';
+            if (Object.hasOwn(obj, 'independent') == true) { document.getElementById('independent').value = obj.independent; } else { document.getElementById('independent').value = ''; }
+            if (Object.hasOwn(obj, 'status') == true) { document.getElementById('status').value = obj.status; } else { document.getElementById('status').value = ''; }
+            if (Object.hasOwn(obj, 'unMember') == true) { document.getElementById('unMember').value = obj.unMember; } else { document.getElementById('unMember').value = ''; }
+            if (Object.hasOwn(obj, 'currencies') == true) { 
+                let currenciesName = '';
+                for (let x in obj.currencies) {
+                    currenciesName += x + '- ';
+                    for (let y in obj.currencies[x]) {
+                        currenciesName += y + ': ' + obj.currencies[x][y] + ', '
+                    }
+                }
+                document.getElementById('currencies').value = currenciesName; 
+            } else { document.getElementById('currencies').value = ''; }
+            if (Object.hasOwn(obj, 'idd') == true) { document.getElementById('idd').value = obj.idd; } else { document.getElementById('idd').value = ''; }
+            obj.idd.forEach(element.root);
+
+
+
+            
+            if (Object.hasOwn(obj, 'flag') == true) { document.getElementById('flag_1').src = obj.flag; }
+            if (Object.hasOwn(obj, 'flags') == true) { document.getElementById('flag_1').src = obj.flags.svg; } 
+            if (Object.hasOwn(obj, 'flags') == true) { document.getElementById('flag_2').src = obj.flags.png; } 
+            document.getElementById('flag_1').className = 'w3-image w3-border w3-border-black';
+            document.getElementById('flag_2').className = 'w3-image w3-border w3-border-black';
         }
         catch (error) {
-            alert(error.message);
+            console.log(error.message);
         }
     }
 }
 
 async function ClearAllField() {
-    document.getElementById('name').value = '';
-    document.getElementById('topLevelDomain').value = '';
-    document.getElementById('alpha2Code').value = '';
-    document.getElementById('alpha3Code').value = '';
-    document.getElementById('callingCodes').value = '';
-    document.getElementById('capital').value = '';
-    document.getElementById('altSpellings').value = '';
-    document.getElementById('region').value = '';
-    document.getElementById('subregion').value = '';
-    document.getElementById('population').value = '';
-    document.getElementById('latlng').value = '';
-    document.getElementById('demonym').value = '';
-    document.getElementById('area').value = '';
-    document.getElementById('gini').value = '';
-    document.getElementById('timezones').value = '';
-    document.getElementById('borders').value = '';
+    document.getElementById('common').value = '';
+    document.getElementById('official').value = '';
     document.getElementById('nativeName').value = '';
-    document.getElementById('numericCode').value = '';
-    document.getElementById('currencies').value = '';
-    document.getElementById('languages').value = '';
-    document.getElementById('translations').value = '';
-    document.getElementById('regionalBlocs').value = '';
+    document.getElementById('tld').value = '';
+    document.getElementById('cca2').value = '';
+    document.getElementById('ccn3').value = '';
+    document.getElementById('cca3').value = '';
     document.getElementById('cioc').value = '';
-    document.getElementById('flag').src = '';
-    document.getElementById('flag').className = '';
+    document.getElementById('independent').value = '';
+    document.getElementById('status').value = '';
+    document.getElementById('unMember').value = '';
+    document.getElementById('currencies').value = '';
+    document.getElementById('idd').value = '';
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    document.getElementById('flag_1').src = '';
+    document.getElementById('flag_2').src = '';
 }
