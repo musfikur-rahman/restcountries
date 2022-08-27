@@ -64,7 +64,7 @@ async function RestSingleCountriesByFetch() {
                 document.getElementById('currencies').value = currenciesName; 
             } else { document.getElementById('currencies').value = ''; }
             if (Object.hasOwn(obj, 'idd') == true) { document.getElementById('idd').value = obj.idd; } else { document.getElementById('idd').value = ''; }
-            obj.idd.forEach(element.root);
+            
 
 
 
