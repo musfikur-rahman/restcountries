@@ -61,13 +61,27 @@ async function RestSingleCountriesByFetch() {
                         currenciesName += y + ': ' + obj.currencies[x][y] + ', '
                     }
                 }
-                document.getElementById('currencies').value = currenciesName; 
+                document.getElementById('currencies').value = currenciesName;                 
             } else { document.getElementById('currencies').value = ''; }
-            if (Object.hasOwn(obj, 'idd') == true) { document.getElementById('idd').value = obj.idd; } else { document.getElementById('idd').value = ''; }
+            if (Object.hasOwn(obj, 'idd') == true) { 
+                let iddName = '';
+                for (let x in obj.idd) {
+                    iddName += x + '- ';
+                    for (let y in obj.idd[x]) {
+                        iddName += y + ': ' + obj.idd[x][y] + ', '
+                    }
+                }
+                document.getElementById('idd').value = iddName;                 
+            } else { document.getElementById('idd').value = ''; }
+            if (Object.hasOwn(obj, 'capital') == true) { 
+                let capitalName = '';
+                for (let x = 0; x < obj.capital.length; x++) { capitalName += obj.capital[x]; }
+                document.getElementById('capital').value = capitalName;
+            } else { document.getElementById('capital').value = ''; }
+
             
-
-
-
+            
+            
             
             if (Object.hasOwn(obj, 'flag') == true) { document.getElementById('flag_1').src = obj.flag; }
             if (Object.hasOwn(obj, 'flags') == true) { document.getElementById('flag_1').src = obj.flags.svg; } 
@@ -95,6 +109,7 @@ async function ClearAllField() {
     document.getElementById('unMember').value = '';
     document.getElementById('currencies').value = '';
     document.getElementById('idd').value = '';
+    document.getElementById('capital').value = '';
     
 
 
