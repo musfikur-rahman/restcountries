@@ -46,6 +46,8 @@ async function RestSingleCountriesByFetch() {
             if (Object.hasOwn(obj, 'unMember') == true) { document.getElementById('unMember').value = obj.unMember; } else { document.getElementById('unMember').value = ''; }
             if (Object.hasOwn(obj, 'currencies') == true) {  for (let x in obj.currencies) { document.getElementById('currencies').value += x + '- '; for (let y in obj.currencies[x]) { document.getElementById('currencies').value += y + ': ' + obj.currencies[x][y] + ', ' } } } else { document.getElementById('currencies').value = ''; }
             if (Object.hasOwn(obj, 'idd') == true) { for (let x in obj.idd) { document.getElementById('idd').value += x + '- '; for (let y in obj.idd[x]) { document.getElementById('idd').value += y + ': ' + obj.idd[x][y] + ', ' } } } else { document.getElementById('idd').value = ''; }
+
+            
             if (Object.hasOwn(obj, 'capital') == true) { for (let x = 0; x < obj.capital.length; x++) { document.getElementById('capital').value += obj.capital[x]; } } else { document.getElementById('capital').value = ''; }
             if (Object.hasOwn(obj, 'altSpellings') == true) { for (let x = 0; x < obj.altSpellings.length; x++) { document.getElementById('altSpellings').value += '[' + obj.altSpellings[x] + ']'; } } else { document.getElementById('altSpellings').value = ''; }
             if (Object.hasOwn(obj, 'region') == true) { document.getElementById('region').value = obj.region; } else { document.getElementById('region').value = ''; }
@@ -57,23 +59,27 @@ async function RestSingleCountriesByFetch() {
             if (Object.hasOwn(obj, 'borders') == true) { for (let x = 0; x < obj.borders.length; x++) { document.getElementById('borders').value += '[' + obj.borders[x] + ']'; } } else { document.getElementById('borders').value = ''; }
             if (Object.hasOwn(obj, 'area') == true) { document.getElementById('area').value = obj.area; } else { document.getElementById('area').value = ''; }
             if (Object.hasOwn(obj, 'demonyms') == true) { for (let x in obj.demonyms) { document.getElementById('demonyms').value += x + '- '; for (let y in obj.demonyms[x]) { document.getElementById('demonyms').value += y + ': ' + obj.demonyms[x][y] + ', ' } } } else { document.getElementById('demonyms').value = ''; }
-            
-
-
-
-
-
-
-
-
-
-            
-            
-
-            if (Object.hasOwn(obj, 'flags') == true) { document.getElementById('flag_1').src = obj.flags.svg; } 
-            if (Object.hasOwn(obj, 'flags') == true) { document.getElementById('flag_2').src = obj.flags.png; } 
+            if (Object.hasOwn(obj.maps, 'googleMaps') == true) { document.getElementById('googleMaps').value = obj.maps.googleMaps; } else { document.getElementById('googleMaps').value = ''; }
+            if (Object.hasOwn(obj.maps, 'openStreetMaps') == true) { document.getElementById('openStreetMaps').value = obj.maps.openStreetMaps; } else { document.getElementById('openStreetMaps').value = ''; }
+            if (Object.hasOwn(obj, 'population') == true) { document.getElementById('population').value = obj.population; } else { document.getElementById('population').value = ''; }
+            if (Object.hasOwn(obj, 'gini') == true) { for (let x in obj.gini) { document.getElementById('gini').value += x + '- ' + obj.gini[x]; } } else { document.getElementById('gini').value = ''; }
+            if (Object.hasOwn(obj, 'fifa') == true) { document.getElementById('fifa').value = obj.fifa; } else { document.getElementById('fifa').value = ''; }
+            if (Object.hasOwn(obj.car, 'signs') == true) { document.getElementById('signs').value = obj.car.signs } else { document.getElementById('signs').value = ''; }
+            if (Object.hasOwn(obj.car, 'side') == true) { document.getElementById('side').value = obj.car.side } else { document.getElementById('side').value = ''; }
+            if (Object.hasOwn(obj, 'timezones') == true) { for (let x = 0; x < obj.timezones.length; x++) { document.getElementById('timezones').value += obj.timezones[x]; } } else { document.getElementById('timezones').value = ''; }
+            if (Object.hasOwn(obj, 'continents') == true) { for (let x = 0; x < obj.continents.length; x++) { document.getElementById('continents').value += obj.continents[x]; } } else { document.getElementById('continents').value = ''; }
+            if (Object.hasOwn(obj, 'flags') == true) { document.getElementById('flag_1').src = obj.flags.png; }
+            if (Object.hasOwn(obj, 'flags') == true) { document.getElementById('flag_2').src = obj.flags.svg; }
+            if (Object.hasOwn(obj, 'coatOfArms') == true) { document.getElementById('flag_3').src = obj.coatOfArms.png; }
+            if (Object.hasOwn(obj, 'coatOfArms') == true) { document.getElementById('flag_4').src = obj.coatOfArms.svg; }
+            if (Object.hasOwn(obj, 'startOfWeek') == true) { document.getElementById('startOfWeek').value = obj.startOfWeek; } else { document.getElementById('startOfWeek').value = ''; }
+            if (Object.hasOwn(obj.capitalInfo, 'latlng') == true) { for (let x = 0; x < obj.capitalInfo.latlng.length; x++) { document.getElementById('capitalInfo').value += '[' + obj.capitalInfo.latlng[x] + ']'; } } else { document.getElementById('capitalInfo').value = ''; }
+            if (Object.hasOwn(obj.postalCode, 'format') == true) { document.getElementById('format').value = obj.postalCode.format; } else { document.getElementById('format').value = ''; }
+            if (Object.hasOwn(obj.postalCode, 'regex') == true) { document.getElementById('regex').value = obj.postalCode.regex; } else { document.getElementById('regex').value = ''; }
             document.getElementById('flag_1').className = 'w3-image w3-border w3-border-black';
             document.getElementById('flag_2').className = 'w3-image w3-border w3-border-black';
+            document.getElementById('flag_3').className = 'w3-image w3-border w3-border-black';
+            document.getElementById('flag_4').className = 'w3-image w3-border w3-border-black';
         }
         catch (error) {
             console.log(error.message);
@@ -106,21 +112,23 @@ async function ClearAllField() {
     document.getElementById('borders').value = '';
     document.getElementById('area').value = '';
     document.getElementById('demonyms').value = '';
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    document.getElementById('googleMaps').value = '';
+    document.getElementById('openStreetMaps').value = '';
+    document.getElementById('population').value = '';
+    document.getElementById('gini').value = '';
+    document.getElementById('fifa').value = '';
+    document.getElementById('signs').value = '';
+    document.getElementById('side').value = '';
+    document.getElementById('timezones').value = '';
+    document.getElementById('continents').value = '';
     document.getElementById('flag_1').src = '';
     document.getElementById('flag_2').src = '';
+    document.getElementById('flag_3').src = '';
+    document.getElementById('flag_4').src = '';
+    document.getElementById('flag_4').src = '';
+    document.getElementById('startOfWeek').value = '';
+    document.getElementById('latlng').value = '';
+    document.getElementById('format').value = '';
+    document.getElementById('regex').value = '';
+    
 }
