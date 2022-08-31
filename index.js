@@ -45,9 +45,8 @@ async function RestSingleCountriesByFetch() {
             if (Object.hasOwn(obj, 'status') == true) { document.getElementById('status').value = obj.status; } else { document.getElementById('status').value = ''; }
             if (Object.hasOwn(obj, 'unMember') == true) { document.getElementById('unMember').value = obj.unMember; } else { document.getElementById('unMember').value = ''; }
             if (Object.hasOwn(obj, 'currencies') == true) {  for (let x in obj.currencies) { document.getElementById('currencies').value += x + '- '; for (let y in obj.currencies[x]) { document.getElementById('currencies').value += y + ': ' + obj.currencies[x][y] + ', ' } } } else { document.getElementById('currencies').value = ''; }
-            if (Object.hasOwn(obj, 'idd') == true) { for (let x in obj.idd) { document.getElementById('idd').value += x + '- '; for (let y in obj.idd[x]) { document.getElementById('idd').value += y + ': ' + obj.idd[x][y] + ', ' } } } else { document.getElementById('idd').value = ''; }
-
-            
+            if (Object.hasOwn(obj.idd, 'root') == true) { document.getElementById('root').value = obj.idd.root; } else { document.getElementById('root').value = ''; }
+            if (Object.hasOwn(obj.idd, 'suffixes') == true) { for (let x = 0; x < obj.idd.suffixes.length; x++) { document.getElementById('suffixes').value += '[' + obj.idd.suffixes[x] + ']'; } } else { document.getElementById('suffixes').value = ''; }
             if (Object.hasOwn(obj, 'capital') == true) { for (let x = 0; x < obj.capital.length; x++) { document.getElementById('capital').value += obj.capital[x]; } } else { document.getElementById('capital').value = ''; }
             if (Object.hasOwn(obj, 'altSpellings') == true) { for (let x = 0; x < obj.altSpellings.length; x++) { document.getElementById('altSpellings').value += '[' + obj.altSpellings[x] + ']'; } } else { document.getElementById('altSpellings').value = ''; }
             if (Object.hasOwn(obj, 'region') == true) { document.getElementById('region').value = obj.region; } else { document.getElementById('region').value = ''; }
@@ -100,7 +99,8 @@ async function ClearAllField() {
     document.getElementById('status').value = '';
     document.getElementById('unMember').value = '';
     document.getElementById('currencies').value = '';
-    document.getElementById('idd').value = '';
+    document.getElementById('root').value = '';
+    document.getElementById('suffixes').value = '';
     document.getElementById('capital').value = '';
     document.getElementById('altSpellings').value = '';
     document.getElementById('region').value = '';
@@ -127,7 +127,7 @@ async function ClearAllField() {
     document.getElementById('flag_4').src = '';
     document.getElementById('flag_4').src = '';
     document.getElementById('startOfWeek').value = '';
-    document.getElementById('latlng').value = '';
+    document.getElementById('capitalInfo').value = '';
     document.getElementById('format').value = '';
     document.getElementById('regex').value = '';
     
