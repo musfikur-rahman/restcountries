@@ -1,151 +1,298 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const countriesContainer = document.getElementById('countries-container');
-    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+    const countrySelect = document.getElementById('country-select');
+    const resultsContainer = document.getElementById('results-container');
+    const tabNav = document.getElementById('tab-nav');
+    const tabContent = document.getElementById('tab-content');
+    const themeSwitcher = document.getElementById('theme-switcher');
+    const body = document.body;
 
-    // Show or hide the scroll-to-top button based on scroll position
-    window.onscroll = function() {
-        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-            scrollToTopBtn.style.display = "block";
+    // --- THEME SWITCHER LOGIC ---
+    const themeIcon = themeSwitcher.querySelector('i');
+    const setTheme = (theme) => {
+        if (theme === 'light') {
+            body.classList.add('light-theme');
+            themeIcon.classList.remove('bi-moon-fill');
+            themeIcon.classList.add('bi-sun-fill');
         } else {
-            scrollToTopBtn.style.display = "none";
+            body.classList.remove('light-theme');
+            themeIcon.classList.remove('bi-sun-fill');
+            themeIcon.classList.add('bi-moon-fill');
         }
+        localStorage.setItem('theme', theme);
     };
 
-    // When the user clicks on the button, scroll to the top of the document
-    scrollToTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    themeSwitcher.addEventListener('click', () => {
+        const currentTheme = body.classList.contains('light-theme') ? 'light' : 'dark';
+        setTheme(currentTheme === 'light' ? 'dark' : 'light');
     });
 
-    fetch('https://restcountries.com/v3.1/all?fields=name')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+
+
+    // --- INITIALIZATION ---
+    fetch('http://ip-api.com/json/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') loadCountries(data.countryCode);
+            else loadCountries();
         })
-        .then(namesData => {
-            if (!Array.isArray(namesData)) {
-                throw new Error('Expected an array of country names.');
-            }
-            namesData.forEach(countryName => {
-                if (countryName && countryName.name && countryName.name.common) {
-                    fetch(`https://restcountries.com/v3.1/name/${countryName.name.common}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`HTTP error! status: ${response.status} for ${countryName.name.common}`);
-                            }
-                            return response.json();
-                        })
-                        .then(countryData => {
-                            const country = countryData[0];
-                            if (country) {
-                                const countryCard = document.createElement('div');
-                                countryCard.classList.add('country-card');
+        .catch(() => loadCountries());
 
-                                let detailsHtml = `
-                                    <img src="${country.flags.png}" alt="${country.flags.alt || `Flag of ${country.name.common}`}">
-                                    <div class="country-card-info">
-                                        <h2>${country.name.common}</h2>
-                                        <p><strong>Official Name:</strong> ${country.name.official || 'N/A'}</p>
-                                `;
-
-                                // Add native names
-                                if (country.name.nativeName) {
-                                    const nativeNames = Object.values(country.name.nativeName).map(n => n.common).filter(Boolean);
-                                    if (nativeNames.length > 0) {
-                                        detailsHtml += `<p><strong>Native Names:</strong> ${nativeNames.join(', ')}</p>`;
-                                    }
-                                }
-
-                                // Add alt spellings
-                                if (country.altSpellings && country.altSpellings.length > 0) {
-                                    detailsHtml += `<p><strong>Alt Spellings:</strong> ${country.altSpellings.join(', ')}</p>`;
-                                }
-
-                                for (const [key, value] of Object.entries(country)) {
-                                    if (['flags', 'name', 'altSpellings'].includes(key)) {
-                                        continue; // Already handled or will be handled by specific fields
-                                    }
-
-                                    let displayValue;
-                                    if (typeof value === 'object' && value !== null) {
-                                        if (Array.isArray(value)) {
-                                            if (key === 'borders' || key === 'timezones' || key === 'continents') {
-                                                displayValue = value.join(', ');
-                                            } else if (key === 'tld') {
-                                                displayValue = value[0] || 'N/A';
-                                            } else if (key === 'latlng') {
-                                                displayValue = `Lat: ${value[0]}, Lng: ${value[1]}`; 
-                                            } else {
-                                                displayValue = `[Array: ${key} with ${value.length} items]`; // Fallback for unhandled arrays
-                                            }
-                                        } else {
-                                            // Handle specific common objects for better display
-                                            switch (key) {
-                                                case 'currencies':
-                                                    displayValue = Object.values(value).map(c => `${c.name} (${c.symbol || ''})`).join(', ') || 'N/A';
-                                                    break;
-                                                case 'languages':
-                                                    displayValue = Object.values(value).join(', ') || 'N/A';
-                                                    break;
-                                                case 'capital':
-                                                    displayValue = value[0] || 'N/A';
-                                                    break;
-                                                case 'maps':
-                                                    displayValue = `<a href="${value.googleMaps}" target="_blank">Google Maps</a>, <a href="${value.openStreetMaps}" target="_blank">OpenStreetMap</a>`;
-                                                    break;
-                                                case 'demonyms':
-                                                    displayValue = value.eng ? `Male: ${value.eng.m}, Female: ${value.eng.f}` : 'N/A';
-                                                    break;
-                                                case 'car':
-                                                    displayValue = value.signs && value.signs.length > 0 ? `Side: ${value.side}, Signs: ${value.signs.join(', ')}` : `Side: ${value.side || 'N/A'}`; 
-                                                    break;
-                                                case 'gini':
-                                                    const giniYear = Object.keys(value)[0];
-                                                    displayValue = giniYear ? `${value[giniYear]} (${giniYear})` : 'N/A';
-                                                    break;
-                                                case 'coatOfArms':
-                                                    displayValue = value.png ? `<img src="${value.png}" alt="Coat of Arms" style="width:50px;height:auto;">` : (value.svg ? `<img src="${value.svg}" alt="Coat of Arms" style="width:50px;height:auto;">` : 'N/A');
-                                                    break;
-                                                case 'idd':
-                                                    displayValue = value.suffixes && value.suffixes.length > 0 ? `Root: ${value.root}, Suffixes: ${value.suffixes.join(', ')}` : `Root: ${value.root || 'N/A'}`; 
-                                                    break;
-                                                case 'translations':
-                                                    displayValue = Object.entries(value).map(([langCode, trans]) => `${langCode}: ${trans.common}`).join('; ');
-                                                    break;
-                                                case 'capitalInfo':
-                                                    displayValue = value.latlng ? `Lat: ${value.latlng[0]}, Lng: ${value.latlng[1]}` : 'N/A';
-                                                    break;
-                                                case 'postalCode':
-                                                    displayValue = `Format: ${value.format}, Regex: ${value.regex}`; 
-                                                    break;
-                                                default:
-                                                    displayValue = `[Object: ${key}]`; // Fallback for unhandled objects
-                                            }
-                                        }
-                                    } else if (typeof value === 'boolean') {
-                                        displayValue = value ? 'Yes' : 'No';
-                                    } else if (typeof value === 'number') {
-                                        displayValue = value.toLocaleString();
-                                    } else {
-                                        displayValue = value || 'N/A';
-                                    }
-                                    detailsHtml += `<p><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${displayValue}</p>`;
-                                }
-                                countryCard.innerHTML = detailsHtml + `</div>`;
-                                countriesContainer.appendChild(countryCard);
-                            }
-                        })
-                        .catch(error => {
-                            console.error(`Error fetching details for ${countryName.name.common}:`, error);
-                        });
-                } else {
-                    console.warn('Invalid country name object received:', countryName);
+    function loadCountries(defaultCountryCode = '') {
+        fetch('https://restcountries.com/v3.1/all?fields=name,cca2')
+            .then(response => response.json())
+            .then(countries => {
+                countries.sort((a, b) => a.name.common.localeCompare(b.name.common));
+                countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.cca2;
+                    option.textContent = country.name.common;
+                    countrySelect.appendChild(option);
+                });
+                if (defaultCountryCode) {
+                    countrySelect.value = defaultCountryCode;
+                    countrySelect.dispatchEvent(new Event('change'));
                 }
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching country names:', error);
-            countriesContainer.innerHTML = '<p>Failed to load countries. Please try again later.</p>';
+            })
+            .catch(error => console.error('Error fetching country list:', error));
+    }
+
+    countrySelect.addEventListener('change', () => {
+        const countryCode = countrySelect.value;
+        resultsContainer.classList.add('hidden');
+        const existingHeader = document.getElementById('country-header');
+        if (existingHeader) existingHeader.remove();
+        tabNav.innerHTML = '';
+        tabContent.innerHTML = '';
+
+        if (countryCode) {
+            fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    const country = data[0];
+                    buildUI(country);
+                    resultsContainer.classList.remove('hidden');
+                })
+                .catch(error => console.error('Error fetching country details:', error));
+        }
+    });
+
+    // --- UI BUILDING ---
+    function buildUI(country) {
+        displayCountryHeader(country);
+        
+        const tabs = {
+            'General': { icon: 'bi-info-circle-fill', content: createGeneralInfoContent },
+            'Geography': { icon: 'bi-globe-americas', content: createGeographyContent },
+            'People': { icon: 'bi-people-fill', content: createPeopleCultureContent },
+            'Economy': { icon: 'bi-bank', content: createEconomyContent },
+            'Codes': { icon: 'bi-qr-code', content: createCodesContent },
+            'Transport': { icon: 'bi-sign-turn-right-fill', content: createTransportationContent },
+            'Symbols': { icon: 'bi-flag-fill', content: createNationalSymbolsContent },
+            'Maps': { icon: 'bi-map-fill', content: createMapsContent },
+            'Translations': { icon: 'bi-translate', content: createTranslationsContent }
+        };
+
+        let isFirstTab = true;
+        for (const [name, { icon, content }] of Object.entries(tabs)) {
+            const contentHtml = content(country);
+            if (contentHtml) { // Only create a tab if there is content for it
+                const tabId = `tab-${name.toLowerCase()}`;
+                
+                const tabLink = document.createElement('li');
+                tabLink.className = 'tab-link';
+                if (isFirstTab) tabLink.classList.add('active');
+                tabLink.dataset.tab = tabId;
+                tabLink.innerHTML = `<i class="${icon}"></i> ${name}`;
+                tabNav.appendChild(tabLink);
+
+                const pane = document.createElement('div');
+                pane.id = tabId;
+                pane.className = 'tab-pane';
+                if (isFirstTab) pane.classList.add('active');
+                pane.innerHTML = contentHtml;
+                tabContent.appendChild(pane);
+                
+                isFirstTab = false;
+            }
+        }
+        
+        addTabEventListeners();
+    }
+
+    function addTabEventListeners() {
+        tabNav.addEventListener('click', (e) => {
+            const clickedTab = e.target.closest('.tab-link');
+            if (!clickedTab) return;
+
+            // Deactivate current active tab/pane
+            tabNav.querySelector('.active').classList.remove('active');
+            tabContent.querySelector('.active').classList.remove('active');
+
+            // Activate new tab/pane
+            const tabId = clickedTab.dataset.tab;
+            clickedTab.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
         });
+    }
+
+    function displayCountryHeader(country) {
+        const headerDiv = document.createElement('div');
+        headerDiv.id = 'country-header';
+        headerDiv.innerHTML = `
+            <img src="${country.flags.svg}" alt="Flag of ${country.name.common}" class="header-flag">
+            <div>
+                <h1>${country.name.common}</h1>
+                <h2>${country.name.official}</h2>
+            </div>
+        `;
+        resultsContainer.insertBefore(headerDiv, resultsContainer.firstChild);
+    }
+
+    // --- CONTENT CREATION FUNCTIONS ---
+    const addDetail = (label, value) => {
+        if (value === undefined || value === null || value === '' || (Array.isArray(value) && value.length === 0)) return '';
+        return `<p><strong>${label}:</strong> ${value}</p>`;
+    };
+
+    function createGeneralInfoContent(country) {
+        let html = addDetail('Capital(s)', country.capital?.join(', '));
+        html += addDetail('Population', country.population?.toLocaleString());
+        html += addDetail('Status', country.status);
+        html += addDetail('UN Member', country.unMember ? 'Yes' : 'No');
+        html += addDetail('Independent', country.independent ? 'Yes' : 'No');
+        html += addDetail('Start of Week', country.startOfWeek);
+        html += addDetail('Timezones', country.timezones?.join(', '));
+        html += addDetail('Continents', country.continents?.join(', '));
+        
+        if (country.name.nativeName) {
+            html += '<h4>Native Names</h4><ul>';
+            for (const langCode in country.name.nativeName) {
+                const langName = new Intl.DisplayNames(['en'], { type: 'language' }).of(langCode);
+                const native = country.name.nativeName[langCode];
+                html += `<li><strong>In ${langName}:</strong> ${native.common} <em>(${native.official})</em></li>`;
+            }
+            html += '</ul>';
+        }
+        if (country.altSpellings && country.altSpellings.length > 0) {
+            html += '<h4>Alternative Spellings</h4>';
+            html += `<p>${country.altSpellings.join(', ')}</p>`;
+        }
+        return html;
+    }
+
+    function createGeographyContent(country) {
+        let html = addDetail('Region', country.region);
+        html += addDetail('Subregion', country.subregion);
+        html += addDetail('Area', `${country.area?.toLocaleString()} km²`);
+        html += addDetail('Landlocked', country.landlocked ? 'Yes' : 'No');
+        html += addDetail('Borders', country.borders?.join(', '));
+        html += addDetail('Coordinates (Lat, Lng)', country.latlng?.join(', '));
+        html += addDetail('Capital Coordinates (Lat, Lng)', country.capitalInfo?.latlng?.join(', '));
+        return html;
+    }
+
+    function createPeopleCultureContent(country) {
+        let html = addDetail('Languages', Object.values(country.languages || {}).join(', '));
+        if (country.demonyms) {
+            const demonym = country.demonyms.eng;
+            const value = demonym.f === demonym.m ? demonym.m : `Female: ${demonym.f}, Male: ${demonym.m}`;
+            html += addDetail('Demonym', value);
+        }
+        return html;
+    }
+
+    function createEconomyContent(country) {
+        let html = '';
+        if (country.currencies) {
+            const currencyStr = Object.values(country.currencies).map(c => `${c.name} (${c.symbol})`).join(', ');
+            html += addDetail('Currencies', currencyStr);
+        }
+        if (country.gini) {
+            const giniStr = Object.entries(country.gini).map(([year, value]) => `${value} (${year})`).join(', ');
+            html += addDetail('Gini Index', giniStr);
+        }
+        return html;
+    }
+
+    function createCodesContent(country) {
+        let html = '<div class="grid-list">';
+        if (country.idd) {
+            const iddStr = `${country.idd.root}${country.idd.suffixes ? country.idd.suffixes.join(',') : ''}`;
+            html += addDetail('Calling Code', iddStr);
+        }
+        html += addDetail('Top-Level Domain', country.tld?.join(', '));
+        html += addDetail('CCA2', country.cca2);
+        html += addDetail('CCA3', country.cca3);
+        html += addDetail('CCN3', country.ccn3);
+        html += addDetail('CIOC', country.cioc);
+        html += addDetail('FIFA', country.fifa);
+        if (country.postalCode) {
+            html += addDetail('Postal Code Format', country.postalCode.format);
+            html += addDetail('Postal Code Regex', `<code>${country.postalCode.regex}</code>`);
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function createTransportationContent(country) {
+        if (!country.car) return null;
+        let html = addDetail('Driving Side', country.car.side);
+        html += addDetail('Car Signs', country.car.signs?.join(', '));
+        return html;
+    }
+
+    function createNationalSymbolsContent(country) {
+        let html = '<div class="symbols-container">';
+        if (country.flags?.png) {
+            html += `<div><h4>Flag</h4><img src="${country.flags.png}" alt="Flag"></div>`;
+        }
+        if (country.coatOfArms?.png) {
+            html += `<div><h4>Coat of Arms</h4><img src="${country.coatOfArms.png}" alt="Coat of Arms"></div>`;
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function createMapsContent(country) {
+        if (!country.maps) return null;
+        let html = '';
+        if (country.maps.googleMaps) {
+            html += `<h4>Google Map</h4><p><a href="${country.maps.googleMaps}" target="_blank">${country.maps.googleMaps}</a></p>`;
+            if (country.latlng) {
+                const [lat, lon] = country.latlng;
+                html += `<div class="map-wrapper"><iframe width="100%" height="400" frameborder="0" src="https://maps.google.com/maps?q=${lat},${lon}&hl=en&z=6&amp;output=embed"></iframe></div>`;
+            }
+        }
+        if (country.maps.openStreetMaps) {
+            html += `<h4>OpenStreetMap</h4><p><a href="${country.maps.openStreetMaps}" target="_blank">${country.maps.openStreetMaps}</a></p>`;
+            if (country.latlng) {
+                const [lat, lon] = country.latlng;
+                const area = country.area || 100000;
+                
+                // Calculate zoom level based on area using a logarithmic scale
+                // The constants are tweaked to provide a reasonable starting view.
+                let zoom = Math.round(9 - Math.log(area / 10000));
+                zoom = Math.max(2, Math.min(18, zoom)); // Clamp zoom level between 2 and 18
+
+                const interactiveUrl = `https://www.openstreetmap.org/#map=${zoom}/${lat}/${lon}`;
+                const embedUrl = interactiveUrl.replace('/#', '/export/embed.html?#');
+                
+                html += `<div class="map-wrapper"><iframe width="100%" height="400" frameborder="0" src="${embedUrl}"></iframe></div>`;
+            }
+        }
+        return html;
+    }
+
+    function createTranslationsContent(country) {
+        if (!country.translations) return null;
+        let html = '<div class="grid-list">';
+        for (const [langCode, translation] of Object.entries(country.translations)) {
+            const langName = new Intl.DisplayNames(['en'], { type: 'language' }).of(langCode) || langCode;
+            html += addDetail(langName, `${translation.common} <em>(${translation.official})</em>`);
+        }
+        html += '</div>';
+        return html;
+    }
 });
