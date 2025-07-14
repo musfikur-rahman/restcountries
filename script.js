@@ -31,10 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- INITIALIZATION ---
-    fetch('http://ip-api.com/json/')
+    fetch('https://ipapi.co/json/')
         .then(response => response.json())
         .then(data => {
-            if (data.status === 'success') loadCountries(data.countryCode);
+            if (data.country_code) loadCountries(data.country_code);
             else loadCountries();
         })
         .catch(() => loadCountries());
