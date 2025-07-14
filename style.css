@@ -260,6 +260,11 @@ body.light-theme #tabs-container {
 }
 .detail-content strong {
     color: var(--heading-color);
+    font-weight: 600; /* Or 700, depending on desired boldness from Poppins font */
+}
+
+strong {
+    font-weight: 600; /* Ensure all strong tags are bold */
 }
 
 .symbols-container {
@@ -275,6 +280,10 @@ body.light-theme #tabs-container {
 .symbols-container img {
     max-width: 120px;
     height: auto;
+}
+
+.symbols-container .flag-image {
+    max-width: 400px;
 }
 
 .map-wrapper {

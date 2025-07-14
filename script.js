@@ -58,6 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error fetching country list:', error));
     }
 
+    let currentCountryData = null; // Declare a variable to store the current country data
+    let osmMap = null; // Variable to hold the Leaflet map instance
+
     countrySelect.addEventListener('change', () => {
         const countryCode = countrySelect.value;
         resultsContainer.classList.add('hidden');
@@ -65,12 +68,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (existingHeader) existingHeader.remove();
         tabNav.innerHTML = '';
         tabContent.innerHTML = '';
+        currentCountryData = null; // Reset current country data
+        if (osmMap) { // Destroy existing map instance if it exists
+            osmMap.remove();
+            osmMap = null;
+        }
 
         if (countryCode) {
             fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`)
                 .then(response => response.json())
                 .then(data => {
                     const country = data[0];
+                    currentCountryData = country; // Store the current country data
                     buildUI(country);
                     resultsContainer.classList.remove('hidden');
                 })
@@ -133,7 +142,32 @@ document.addEventListener('DOMContentLoaded', () => {
             // Activate new tab/pane
             const tabId = clickedTab.dataset.tab;
             clickedTab.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+            const targetPane = document.getElementById(tabId);
+            targetPane.classList.add('active');
+
+            // Special handling for the Maps tab to ensure map reloads
+            if (tabId === 'tab-maps' && currentCountryData) {
+                // Re-render the map content to ensure the map div is present
+                targetPane.innerHTML = createMapsContent(currentCountryData);
+
+                // Initialize Leaflet map
+                if (osmMap) {
+                    osmMap.remove(); // Remove existing map instance
+                }
+                const [lat, lon] = currentCountryData.latlng;
+                osmMap = L.map('osm-map').setView([lat, lon], 5); // Initial zoom level
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(osmMap);
+
+                L.marker([lat, lon]).addTo(osmMap)
+                    .bindPopup(currentCountryData.name.common)
+                    .openPopup();
+
+                // Invalidate map size to ensure it renders correctly
+                setTimeout(() => { osmMap.invalidateSize(); }, 100);
+            }
         });
     }
 
@@ -246,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createNationalSymbolsContent(country) {
         let html = '<div class="symbols-container">';
         if (country.flags?.png) {
-            html += `<div><h4>Flag</h4><img src="${country.flags.png}" alt="Flag"></div>`;
+            html += `<div><h4>Flag</h4><img src="${country.flags.png}" alt="Flag" class="flag-image"></div>`;
         }
         if (country.coatOfArms?.png) {
             html += `<div><h4>Coat of Arms</h4><img src="${country.coatOfArms.png}" alt="Coat of Arms"></div>`;
@@ -256,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createMapsContent(country) {
-        if (!country.maps) return null;
+        if (!country.maps || !country.latlng) return null;
         let html = '';
         if (country.maps.googleMaps) {
             html += `<h4>Google Map</h4><p><a href="${country.maps.googleMaps}" target="_blank">${country.maps.googleMaps}</a></p>`;
@@ -265,23 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `<div class="map-wrapper"><iframe width="100%" height="400" frameborder="0" src="https://maps.google.com/maps?q=${lat},${lon}&hl=en&z=6&amp;output=embed"></iframe></div>`;
             }
         }
-        if (country.maps.openStreetMaps) {
-            html += `<h4>OpenStreetMap</h4><p><a href="${country.maps.openStreetMaps}" target="_blank">${country.maps.openStreetMaps}</a></p>`;
-            if (country.latlng) {
-                const [lat, lon] = country.latlng;
-                const area = country.area || 100000;
-                
-                // Calculate zoom level based on area using a logarithmic scale
-                // The constants are tweaked to provide a reasonable starting view.
-                let zoom = Math.round(9 - Math.log(area / 10000));
-                zoom = Math.max(2, Math.min(18, zoom)); // Clamp zoom level between 2 and 18
-
-                const interactiveUrl = `https://www.openstreetmap.org/#map=${zoom}/${lat}/${lon}`;
-                const embedUrl = interactiveUrl.replace('/#', '/export/embed.html?#');
-                
-                html += `<div class="map-wrapper"><iframe width="100%" height="400" frameborder="0" src="${embedUrl}"></iframe></div>`;
-            }
-        }
+        
+        html += `<h4>OpenStreetMap</h4><div id="osm-map" style="height: 400px; width: 100%;"></div>`;
         return html;
     }
 
