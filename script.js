@@ -31,10 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- INITIALIZATION ---
-    fetch('https://ipapi.co/json/')
+    fetch('https://ipinfo.io/json')
         .then(response => response.json())
         .then(data => {
-            if (data.country_code) loadCountries(data.country_code);
+            if (data.country) loadCountries(data.country);
             else loadCountries();
         })
         .catch(() => loadCountries());
